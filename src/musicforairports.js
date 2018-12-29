@@ -32,7 +32,7 @@ const SOUND_COLOR = '#ED146F';
 
 let audioContext = new AudioContext();
 let gainNode = audioContext.createGain();
-gainNode.gain.setValue(0.5, audioContext.currentTime);
+gainNode.gain.value = 0.5;
 gainNode.connect(audioContext.destination);
 
 let sampleCache = {};
