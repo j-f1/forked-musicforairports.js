@@ -31,6 +31,10 @@ const LANE_COLOR = 'rgba(220, 220, 220, 0.3)';
 const SOUND_COLOR = '#ED146F';
 
 let audioContext = new AudioContext();
+let gainNode = audioContext.createGain();
+gainNode.gain.setValue(0.5, audioContext.currentTime);
+gainNode.connect(audioContext.destination);
+
 let sampleCache = {};
 
 let canvas = document.getElementById('music-for-airports');
@@ -163,7 +167,7 @@ fetchSample('Samples/AirportTerminal.wav').then(convolverBuffer => {
     } else {
       convolver = audioContext.createConvolver();
       convolver.buffer = convolverBuffer;
-      convolver.connect(audioContext.destination);
+      convolver.connect(gainNode);
       playingSince = audioContext.currentTime;
       runningLoops = LOOPS.map(loop => startLoop(loop, convolver));
     }
