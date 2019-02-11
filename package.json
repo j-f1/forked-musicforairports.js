@@ -2,6 +2,8 @@
   "private": true,
   "main": "musicforairports.js",
   "scripts": {
+    "lint": "prettier --check src/* dist/*.html **/*.{yml,json,md}",
+    "format": "npm run lint -- --write",
     "compile": "babel src -d dist",
     "minify": "uglifyjs -o dist/musicforairports.min.js dist/musicforairports.js",
     "build": "npm run compile && npm run minify",
@@ -18,6 +20,7 @@
     "@babel/preset-typescript": "^7.1.0",
     "concurrently": "^2.2.0",
     "lite-server": "^2.2.2",
+    "prettier": "^1.16.4",
     "uglify-js": "^2.7.1"
   }
 }

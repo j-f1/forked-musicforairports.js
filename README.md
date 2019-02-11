@@ -28,18 +28,18 @@ This installs a live local server as well as a Babel compiler watcher. Changes i
 
 To build the project, just invoke `npm run build`. Everything you need will be in the `dist` folder:
 
-* `index.html` to host the application
-* `musicforairport.js`, the compiled source code of the app.
-* `musicforairports.min.js`, a minified version of the source code.
-* `Samples` samples used to play the music and to generate the convolution reverb.
+- `index.html` to host the application
+- `musicforairport.js`, the compiled source code of the app.
+- `musicforairports.min.js`, a minified version of the source code.
+- `Samples` samples used to play the music and to generate the convolution reverb.
 
 ### Embedding
 
 If you want to embed the player on an existing website, take a look at `index.html`. There are three key parts you need to take from there and add to your page:
 
-* A `<canvas>` element with id `music-for-airports`.
-* The whatwg-fetch polyfill and the Web Audio API shim libraries for cross-browser compatibility.
-* The `musicforairports.js` or `musicforairports.min.js` script tag.
+- A `<canvas>` element with id `music-for-airports`.
+- The whatwg-fetch polyfill and the Web Audio API shim libraries for cross-browser compatibility.
+- The `musicforairports.js` or `musicforairports.min.js` script tag.
 
 ## License
 
