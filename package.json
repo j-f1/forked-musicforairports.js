@@ -4,7 +4,7 @@
   "scripts": {
     "lint": "prettier --check src/* dist/*.html **/*.{yml,json,md}",
     "format": "npm run lint -- --write",
-    "compile": "babel src -d dist",
+    "compile": "babel src -d dist --extensions .ts",
     "minify": "uglifyjs -o dist/musicforairports.min.js dist/musicforairports.js",
     "build": "npm run compile && npm run minify",
     "build:watch": "babel src -d dist -w",
