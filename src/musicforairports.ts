@@ -1,44 +1,47 @@
-interface Sample {
-  note: string
+interface Note {
+  name: NoteName
   octave: number
+}
+type NoteName = 'C' | 'C#' | 'Db' | 'D' | 'D#' | 'Eb' | 'E' | 'F' | 'F#' | 'Gb' | 'G' | 'G#' | 'Ab' | 'A' | 'A#' | 'Bb' | 'B'
+interface Sample extends Note {
   file: string
 }
 
 type Instrument = 'Grand Piano'
 const SAMPLE_LIBRARY: { [key in Instrument]: Array<Sample> } = {
   'Grand Piano': [
-    { note: 'A',  octave: 4, file: 'Samples/Grand Piano/piano-f-a4.wav' },
-    { note: 'A',  octave: 5, file: 'Samples/Grand Piano/piano-f-a5.wav' },
-    { note: 'A',  octave: 6, file: 'Samples/Grand Piano/piano-f-a6.wav' },
-    { note: 'C',  octave: 4, file: 'Samples/Grand Piano/piano-f-c4.wav' },
-    { note: 'C',  octave: 5, file: 'Samples/Grand Piano/piano-f-c5.wav' },
-    { note: 'C',  octave: 6, file: 'Samples/Grand Piano/piano-f-c6.wav' },
-    { note: 'D#',  octave: 4, file: 'Samples/Grand Piano/piano-f-d♯4.wav' },
-    { note: 'D#',  octave: 5, file: 'Samples/Grand Piano/piano-f-d♯5.wav' },
-    { note: 'D#',  octave: 6, file: 'Samples/Grand Piano/piano-f-d♯6.wav' },
-    { note: 'F#',  octave: 4, file: 'Samples/Grand Piano/piano-f-f♯4.wav' },
-    { note: 'F#',  octave: 5, file: 'Samples/Grand Piano/piano-f-f♯5.wav' },
-    { note: 'F#',  octave: 6, file: 'Samples/Grand Piano/piano-f-f♯6.wav' }
+    { name: 'A',  octave: 4, file: 'Samples/Grand Piano/piano-f-a4.wav' },
+    { name: 'A',  octave: 5, file: 'Samples/Grand Piano/piano-f-a5.wav' },
+    { name: 'A',  octave: 6, file: 'Samples/Grand Piano/piano-f-a6.wav' },
+    { name: 'C',  octave: 4, file: 'Samples/Grand Piano/piano-f-c4.wav' },
+    { name: 'C',  octave: 5, file: 'Samples/Grand Piano/piano-f-c5.wav' },
+    { name: 'C',  octave: 6, file: 'Samples/Grand Piano/piano-f-c6.wav' },
+    { name: 'D#',  octave: 4, file: 'Samples/Grand Piano/piano-f-d♯4.wav' },
+    { name: 'D#',  octave: 5, file: 'Samples/Grand Piano/piano-f-d♯5.wav' },
+    { name: 'D#',  octave: 6, file: 'Samples/Grand Piano/piano-f-d♯6.wav' },
+    { name: 'F#',  octave: 4, file: 'Samples/Grand Piano/piano-f-f♯4.wav' },
+    { name: 'F#',  octave: 5, file: 'Samples/Grand Piano/piano-f-f♯5.wav' },
+    { name: 'F#',  octave: 6, file: 'Samples/Grand Piano/piano-f-f♯6.wav' }
   ]
 };
 
-const OCTAVE = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+const OCTAVE: NoteName[] = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
 interface Loop {
   instrument: Instrument
-  note: string
+  note: Note
   duration: number
   delay: number
 }
 
 const LOOPS: Loop[] = [
-  {instrument: 'Grand Piano', note: 'F4',  duration: 19.7, delay: 4},
-  {instrument: 'Grand Piano', note: 'Ab4', duration: 17.8, delay: 8.1},
-  {instrument: 'Grand Piano', note: 'C5',  duration: 21.3, delay: 5.6},
-  {instrument: 'Grand Piano', note: 'Db5', duration: 18.5, delay: 12.6},
-  {instrument: 'Grand Piano', note: 'Eb5', duration: 20.0, delay: 9.2},
-  {instrument: 'Grand Piano', note: 'F5',  duration: 20.0, delay: 14.1},
-  {instrument: 'Grand Piano', note: 'Ab5', duration: 17.7, delay: 3.1}
+  {instrument: 'Grand Piano', note: { name: 'F', octave: 4 },  duration: 19.7, delay: 4},
+  {instrument: 'Grand Piano', note: { name: 'Ab', octave: 4 }, duration: 17.8, delay: 8.1},
+  {instrument: 'Grand Piano', note: { name: 'C', octave: 5 },  duration: 21.3, delay: 5.6},
+  {instrument: 'Grand Piano', note: { name: 'Db', octave: 5 }, duration: 18.5, delay: 12.6},
+  {instrument: 'Grand Piano', note: { name: 'Eb', octave: 5 }, duration: 20.0, delay: 9.2},
+  {instrument: 'Grand Piano', note: { name: 'F', octave: 5 },  duration: 20.0, delay: 14.1},
+  {instrument: 'Grand Piano', note: { name: 'Ab', octave: 5 }, duration: 17.7, delay: 3.1}
 ];
 
 const LANE_COLOR = 'rgba(220, 220, 220, 0.3)';
@@ -64,47 +67,48 @@ function fetchSample(path: string) {
   return sampleCache[path];
 }
 
-function noteValue(note: string, octave: number) {
-  return octave * 12 + OCTAVE.indexOf(note);
+function octaveIndex(note: Note) {
+  return OCTAVE.indexOf(flatToSharp(note.name))
 }
 
-function getNoteDistance(note1: string, octave1: number, note2: string, octave2: number) {
-  return noteValue(note1, octave1) - noteValue(note2, octave2);
+function noteValue(note: Note) {
+  return note.octave * 12 + octaveIndex(note);
 }
 
-function getNearestSample(sampleBank: Sample[], note: string, octave: number) {
+function getNoteDistance(note1: Note, note2: Note) {
+  return noteValue(note1) - noteValue(note2);
+}
+
+function getNearestSample(sampleBank: Sample[], note: Note) {
   let sortedBank = sampleBank.slice().sort((sampleA, sampleB) => {
-    let distanceToA = Math.abs(getNoteDistance(note, octave, sampleA.note, sampleA.octave));
-    let distanceToB = Math.abs(getNoteDistance(note, octave, sampleB.note, sampleB.octave));
+    let distanceToA = Math.abs(getNoteDistance(note, sampleA));
+    let distanceToB = Math.abs(getNoteDistance(note, sampleB));
     return distanceToA - distanceToB;
   });
   return sortedBank[0];
 }
 
-function flatToSharp(note: string) {
-  switch (note) {
+function flatToSharp(name: NoteName) {
+  switch (name) {
     case 'Bb': return 'A#';
     case 'Db': return 'C#';
     case 'Eb': return 'D#';
     case 'Gb': return 'F#';
     case 'Ab': return 'G#';
-    default:   return note;
+    default:   return name;
   }
 }
 
-function getSample(instrument: string, noteAndOctave: string) {
-  let [, requestedNote, requestedOctave] = /^(\w[b\#]?)(\d)$/.exec(noteAndOctave);
-  const octave = parseInt(requestedOctave, 10);
-  const note = flatToSharp(requestedNote);
+function getSample(instrument: string, note: Note) {
   let sampleBank = SAMPLE_LIBRARY[instrument];
-  let nearestSample = getNearestSample(sampleBank, note, octave);
+  let nearestSample = getNearestSample(sampleBank, note);
   return fetchSample(nearestSample.file).then(audioBuffer => ({
     audioBuffer: audioBuffer,
-    distance: getNoteDistance(note, octave, nearestSample.note, nearestSample.octave)
+    distance: getNoteDistance(note, nearestSample)
   }));
 }
 
-function playSample(instrument: Instrument, note: string, destination: AudioNode, delaySeconds = 0) {
+function playSample(instrument: Instrument, note: Note, destination: AudioNode, delaySeconds = 0) {
   getSample(instrument, note).then(({audioBuffer, distance}) => {
     let playbackRate = Math.pow(2, distance / 12);
     let bufferSource = audioContext.createBufferSource();
