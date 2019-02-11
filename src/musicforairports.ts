@@ -1,9 +1,11 @@
-/**
- * @typedef {{ note: string, octave: number, file: string }} Sample
- */
+interface Sample {
+  note: string
+  octave: number
+  file: string
+}
 
-/** @type {{ [instrument: string]: Array<Sample> }} */
-const SAMPLE_LIBRARY = {
+type Instrument = 'Grand Piano'
+const SAMPLE_LIBRARY: { [key in Instrument]: Array<Sample> } = {
   'Grand Piano': [
     { note: 'A',  octave: 4, file: 'Samples/Grand Piano/piano-f-a4.wav' },
     { note: 'A',  octave: 5, file: 'Samples/Grand Piano/piano-f-a5.wav' },
@@ -22,8 +24,14 @@ const SAMPLE_LIBRARY = {
 
 const OCTAVE = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
-/** @type {Array<{ instrument: string, note: string, duration: number, delay: number }>} */
-const LOOPS = [
+interface Loop {
+  instrument: Instrument
+  note: string
+  duration: number
+  delay: number
+}
+
+const LOOPS: Loop[] = [
   {instrument: 'Grand Piano', note: 'F4',  duration: 19.7, delay: 4},
   {instrument: 'Grand Piano', note: 'Ab4', duration: 17.8, delay: 8.1},
   {instrument: 'Grand Piano', note: 'C5',  duration: 21.3, delay: 5.6},
@@ -41,49 +49,30 @@ let gainNode = audioContext.createGain();
 gainNode.gain.value = 0.5;
 gainNode.connect(audioContext.destination);
 
-/** @type {{ [key: string]: Promise<AudioBuffer> | undefined }} */
-let sampleCache = {};
+let sampleCache: { [key: string]: Promise<AudioBuffer> | undefined } = {};
 
-/** @type {HTMLCanvasElement} */
-let canvas = document.getElementById('music-for-airports');
+let canvas = document.getElementById('music-for-airports') as HTMLCanvasElement;
 let context = canvas.getContext('2d');
 
 // Control variable, set to start time when playing begins
-/** @type {number} */
-let playingSince = null;
+let playingSince: number | null = null;
 
-/** @param {string} path */
-function fetchSample(path) {
+function fetchSample(path: string) {
   sampleCache[path] = sampleCache[path] || fetch(encodeURIComponent(path))
     .then(response => response.arrayBuffer())
     .then(arrayBuffer => audioContext.decodeAudioData(arrayBuffer));
   return sampleCache[path];
 }
 
-/**
- * @param {string} note
- * @param {number} octave
- */
-function noteValue(note, octave) {
+function noteValue(note: string, octave: number) {
   return octave * 12 + OCTAVE.indexOf(note);
 }
 
-/**
- * @param {string} note1
- * @param {number} octave1
- * @param {string} note2
- * @param {number} octave2
- */
-function getNoteDistance(note1, octave1, note2, octave2) {
+function getNoteDistance(note1: string, octave1: number, note2: string, octave2: number) {
   return noteValue(note1, octave1) - noteValue(note2, octave2);
 }
 
-/**
- * @param {Array<Sample>} sampleBank
- * @param {string} note
- * @param {number} octave
- */
-function getNearestSample(sampleBank, note, octave) {
+function getNearestSample(sampleBank: Sample[], note: string, octave: number) {
   let sortedBank = sampleBank.slice().sort((sampleA, sampleB) => {
     let distanceToA = Math.abs(getNoteDistance(note, octave, sampleA.note, sampleA.octave));
     let distanceToB = Math.abs(getNoteDistance(note, octave, sampleB.note, sampleB.octave));
@@ -92,10 +81,7 @@ function getNearestSample(sampleBank, note, octave) {
   return sortedBank[0];
 }
 
-/**
- * @param {string} note
- */
-function flatToSharp(note) {
+function flatToSharp(note: string) {
   switch (note) {
     case 'Bb': return 'A#';
     case 'Db': return 'C#';
@@ -106,28 +92,19 @@ function flatToSharp(note) {
   }
 }
 
-/**
- * @param {string} instrument
- * @param {string} noteAndOctave
- */
-function getSample(instrument, noteAndOctave) {
+function getSample(instrument: string, noteAndOctave: string) {
   let [, requestedNote, requestedOctave] = /^(\w[b\#]?)(\d)$/.exec(noteAndOctave);
-  requestedOctave = parseInt(requestedOctave, 10);
-  requestedNote = flatToSharp(requestedNote);
+  const octave = parseInt(requestedOctave, 10);
+  const note = flatToSharp(requestedNote);
   let sampleBank = SAMPLE_LIBRARY[instrument];
-  let nearestSample = getNearestSample(sampleBank, requestedNote, requestedOctave);
+  let nearestSample = getNearestSample(sampleBank, note, octave);
   return fetchSample(nearestSample.file).then(audioBuffer => ({
     audioBuffer: audioBuffer,
-    distance: getNoteDistance(requestedNote, requestedOctave, nearestSample.note, nearestSample.octave)
+    distance: getNoteDistance(note, octave, nearestSample.note, nearestSample.octave)
   }));
 }
 
-/**
- * @param {string} instrument
- * @param {string} note
- * @param {AudioNode} destination
- */
-function playSample(instrument, note, destination, delaySeconds = 0) {
+function playSample(instrument: Instrument, note: string, destination: AudioNode, delaySeconds = 0) {
   getSample(instrument, note).then(({audioBuffer, distance}) => {
     let playbackRate = Math.pow(2, distance / 12);
     let bufferSource = audioContext.createBufferSource();
@@ -184,11 +161,7 @@ function render() {
   }
 }
 
-/**
- * @param {{ instrument: string, note: string, duration: number, delay: number }} opts
- * @param {AudioNode} nextNode
- */
-function startLoop({instrument, note, duration, delay}, nextNode) {
+function startLoop({instrument, note, duration, delay}: Loop, nextNode: AudioNode) {
   playSample(instrument, note, nextNode, delay);
   return setInterval(
     () => playSample(instrument, note, nextNode, delay),
@@ -198,10 +171,8 @@ function startLoop({instrument, note, duration, delay}, nextNode) {
 
 fetchSample('Samples/AirportTerminal.wav').then(convolverBuffer => {
 
-  /** @type {ConvolverNode} */
-  let convolver;
-  /** @type {Array<number>} */
-  let runningLoops;
+  let convolver: ConvolverNode;
+  let runningLoops: number[];
 
   canvas.addEventListener('click', () => {
     if (playingSince) {
